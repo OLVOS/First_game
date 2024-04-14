@@ -20,7 +20,7 @@ class Stats():
         # self.rect.top = self.screen_rect.topleft
 
     def stats_reset(self):
-        self.health = 4
+        self.health = 2
         self.score = 0
 
 

@@ -1,6 +1,5 @@
 import pygame
-import players
-import enemys
+from exp.pygame.game_1.main.entries import players, enemys
 
 
 def damage():

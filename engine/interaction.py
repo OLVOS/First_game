@@ -1,22 +1,27 @@
 import pygame, sys
-import CONSTS as con
-from enemys import Enemy
-from bullet import Bullet
-from stats import Stats
-from scores import Score
-from menus import Menu
+from exp.pygame.game_1.main.settings import CONSTS as con
+from exp.pygame.game_1.main.entries.enemys import Enemy
+from exp.pygame.game_1.main.entries.bullet import Bullet
+from exp.pygame.game_1.main.settings.stats import Stats
+from game_state import Game
 import time
 
 
-def events(screen, player, bullets):
+def events(screen, menu, game, player, bullets):
     """обработка событий"""
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT or event.type == pygame.K_ESCAPE:
             sys.exit()
-            # running = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            if menu.start_button_rect.collidepoint(mouse_pos):
+                print('click to mouse')
+                game.state = 'gameplay'
 
         elif event.type == pygame.KEYDOWN:
+            game = Game(screen)
             if event.key == pygame.K_d: #право
                 player.mright = True
             elif event.key == pygame.K_a: #лево
@@ -28,12 +33,6 @@ def events(screen, player, bullets):
             elif event.key == pygame.K_SPACE: #пробел
                 new_bullet = Bullet(screen, player)
                 bullets.add(new_bullet)
-
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                menu = Menu(screen)
-                if menu.text_rect.collidepoint(event.pos):
-
-                    print("Нажата кнопка 'Играть'")
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_d: #право
@@ -118,10 +117,15 @@ def update_bullets(screen, stats, sc, bullets, enemies):
         record_check(stats, sc)
 
 
-def update_enemy(screen, stats, player, enemies, bullets):
+def update_enemy(screen, menu, game, stats, player, enemies, bullets):
     enemies.update()
     if stats.health == 0:
-        sys.exit()
+        enemies.empty()
+        bullets.empty()
+        # player.respawn()
+        game.state = 'menu'
+
+        pygame.display.flip()
 
     if pygame.sprite.spritecollideany(player, enemies):
         player_kill(screen, stats, player, enemies, bullets)
@@ -142,18 +146,18 @@ def record_check(stats, sc):
     if stats.score > stats.record:
         stats.record = stats.score
         sc.image_record()
-        with open('record.txt', 'w') as r:
+        with open('../settings/record.txt', 'w') as r:
             r.write(str(stats.record))
 
 
 def update_screen(screen, menu, bg, hearts, score, player, enemies, bullets):
     screen.fill(bg)
-    menu.output_menu()
-    # hearts.draw()
+    # menu.draw_button()
     score.output_score()
 
     for bullet in bullets.sprites():
         bullet.output_bullet()
+
     player.draw()
     enemies.draw(screen)
     pygame.display.flip()
