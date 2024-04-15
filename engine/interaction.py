@@ -7,17 +7,19 @@ from game_state import Game
 import time
 
 
-def events(screen, menu, game, player, bullets):
+def events(screen, menu, stats, sc, game, player, bullets):
     """обработка событий"""
 
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT or event.type == pygame.K_ESCAPE:
             sys.exit()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
-            if menu.start_button_rect.collidepoint(mouse_pos):
-                print('click to mouse')
+            if game.state == 'menu' and menu.start_button_rect.collidepoint(mouse_pos):
+                stats.score = 0
+                sc.image_score()
                 game.state = 'gameplay'
 
         elif event.type == pygame.KEYDOWN:
@@ -43,16 +45,6 @@ def events(screen, menu, game, player, bullets):
                 player.mtop = False
             elif event.key == pygame.K_s: #низ
                 player.mdown = False
-
-
-# def damage(player, enemy, bullet):
-#     player = player.get_rect()
-#     enemy = enemy.get_rect()
-#     bullet = bullet.get_rect()
-#
-#     if bullet.colliderect(enemy):
-#         print('YOU LOSE')
-# def damage2():
 
 
 def create_enemy(screen, enemies):
@@ -89,7 +81,7 @@ def update_stats(screen, hearts):
 
 def restart_enemies(screen, player, enemies):
     if len(enemies) == 0:
-        time.sleep(0.5)
+        # time.sleep(0.5)
         player.respawn()
         create_enemy(screen, enemies)
 
@@ -99,38 +91,47 @@ def player_kill(screen, stats, player, enemies, bullets):
     enemies.empty()
     bullets.empty()
     player.respawn()
-    create_enemy(screen, enemies)
+    # create_enemy(screen, enemies)
     time.sleep(1)
 
 
-def update_bullets(screen, stats, sc, bullets, enemies):
+def update_bullets(screen, stats, sc, bullets, player, enemies):
     bullets.update()
+    if len(enemies) == 0:
+        bullets.empty()
+        print('enemies = 0 and bullet.empty')
     for bullet in bullets.copy():
         if bullet.rect.bottom <= 0:
             bullets.remove(bullet)
+
     collisions = pygame.sprite.groupcollide(bullets, enemies, True, True)
+
     for enemy in collisions.values():
         stats.score += 1 * len(enemy)
+
     if collisions:
         stats.score += 1
         sc.image_score()
         record_check(stats, sc)
+        enemies_check(screen, stats, player, enemies, bullets)
 
 
 def update_enemy(screen, menu, game, stats, player, enemies, bullets):
     enemies.update()
-    if stats.health == 0:
-        enemies.empty()
-        bullets.empty()
-        # player.respawn()
-        game.state = 'menu'
 
-        pygame.display.flip()
-
+    enemies_check(screen, stats, player, enemies, bullets)
     if pygame.sprite.spritecollideany(player, enemies):
         player_kill(screen, stats, player, enemies, bullets)
         print('oops!', f'Твои жизни:{stats.health}')
-    enemies_check(screen, stats, player, enemies, bullets)
+
+    elif stats.health == 0:
+
+        enemies.empty()
+        bullets.empty()
+
+        game.state = 'menu'
+        stats.health = 2
+        return
 
 
 def enemies_check(screen, stats, player, enemies, bullets):
@@ -140,24 +141,27 @@ def enemies_check(screen, stats, player, enemies, bullets):
         if enemy.rect.bottom == screen_rect.bottom:
             player_kill(screen, stats, player, enemies, bullets)
             break
+    if len(enemies) == 0:
+        bullets.empty()
+        restart_enemies(screen, player, enemies)
 
 
 def record_check(stats, sc):
     if stats.score > stats.record:
         stats.record = stats.score
         sc.image_record()
-        with open('../settings/record.txt', 'w') as r:
+        with open('../record.txt', 'w') as r:
             r.write(str(stats.record))
 
 
-def update_screen(screen, menu, bg, hearts, score, player, enemies, bullets):
-    screen.fill(bg)
-    # menu.draw_button()
-    score.output_score()
+def update_screen(screen, menu, color, bg, hearts, score, player, enemies, bullets):
+    # screen.fill(color)
+    screen.blit(bg, (0, 0))
 
     for bullet in bullets.sprites():
         bullet.output_bullet()
 
+    score.output_score()
     player.draw()
     enemies.draw(screen)
     pygame.display.flip()

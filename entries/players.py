@@ -9,7 +9,7 @@ class Player:
         self.screen_rect = screen.get_rect()
         self.image = pygame.image.load('/code/pymain/exp/pygame/game_1/main/images/player2.png')
         self.rect = self.image.get_rect()
-        self.speed = 1
+        self.speed = 6
 
         self.center = self.screen_rect.centerx
         self.rect.centerx = self.screen_rect.centerx

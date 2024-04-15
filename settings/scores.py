@@ -17,7 +17,7 @@ class Score():
         self.score_img = self.front.render(str(self.stats.score), True, self.text_color, self.bg)
         self.score_rect = self.score_img.get_rect()
         self.score_rect.top = self.screen_rect.top+10
-        self.score_rect.right = self.screen_rect.centery+45
+        self.score_rect.left = self.screen_rect.left+10
 
     def image_record(self):
         self.record_img = self.front.render(str(self.stats.record), True, self.text_color, self.bg)
@@ -28,5 +28,9 @@ class Score():
     def output_score(self):
         """рисовка"""
         self.screen.blit(self.score_img, self.score_rect)
+        self.screen.blit(self.record_img, self.record_rect)
+
+    def output_record(self):
+        """рисовка"""
         self.screen.blit(self.record_img, self.record_rect)
 

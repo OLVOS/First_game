@@ -31,3 +31,12 @@ while run:
 
 pygame.quit()
 exit()
+
+# def damage(player, enemy, bullet):
+#     player = player.get_rect()
+#     enemy = enemy.get_rect()
+#     bullet = bullet.get_rect()
+#
+#     if bullet.colliderect(enemy):
+#         print('YOU LOSE')
+# def damage2():
